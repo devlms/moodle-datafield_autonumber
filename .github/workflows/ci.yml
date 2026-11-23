@@ -71,6 +71,10 @@ jobs:
           sudo locale-gen en_AU.UTF-8
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
 
+      - name: Drop git metadata from the plugin copy
+        # Grunt backs up the plugin folder and cannot copy git's read-only object files.
+        run: rm -rf plugin/.git
+
       - name: Install moodle-plugin-ci
         run: moodle-plugin-ci install --plugin ./plugin --db-host=127.0.0.1
         env:
