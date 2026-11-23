@@ -132,6 +132,20 @@ class data_field_autonumber extends data_field_base {
     }
 
     /**
+     * CSV imports leave the number alone: the entry was numbered when the import created it.
+     *
+     * Without this method the importer inserts the file's value as a second content row.
+     *
+     * @param int $recordid
+     * @param mixed $value
+     * @param string $name
+     * @return bool
+     */
+    public function update_content_import($recordid, $value, $name = '') {
+        return true;
+    }
+
+    /**
      * The field never counts as filled in by the user.
      *
      * @param mixed $value

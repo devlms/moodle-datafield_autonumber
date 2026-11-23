@@ -20,6 +20,7 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/mod/data/lib.php');
+require_once($CFG->libdir . '/csvlib.class.php');
 
 /**
  * Tests for the entry number field.
@@ -206,6 +207,20 @@ final class field_test extends \advanced_testcase {
         numberer::remove_empty_duplicates((int)$field->field->id, $recordid);
         $this->assertSame(1, $this->count_rows($field, $recordid));
         $this->assertSame('REQ-0002', $this->shown($field, $this->add_entry('Next')));
+    }
+
+    public function test_csv_import_numbers_entries_and_ignores_numbers_in_the_file(): void {
+        global $DB;
+        $field = $this->add_number_field();
+        $this->add_entry('Already here');
+        $csv = make_request_directory() . '/entries.csv';
+        file_put_contents($csv, "Request,Number\nImported one,REQ-0999\nImported two,\n");
+        $cm = get_coursemodule_from_instance('data', $this->data->id);
+        $importer = new \mod_data\local\importer\csv_entries_importer($csv, 'entries.csv');
+        $importer->import_csv($cm, $this->data, 'UTF-8', 'comma');
+
+        $numbers = $DB->get_records_menu('data_content', ['fieldid' => $field->field->id], 'recordid', 'recordid, content');
+        $this->assertSame(['1', '2', '3'], array_values($numbers));
     }
 
     /**
